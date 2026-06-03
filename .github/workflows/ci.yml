@@ -17,6 +17,23 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t my-nginx-demo .
-      - run: docker run -d -p 8080:80 --name website my-nginx-demo
-      - run: docker logs website
-      - run: curl localhost:8080
+
+      - name: Run Container
+      - run: docker run -d -p 8080:80 --name website my-nginx-demo .
+
+logs:
+  steps:
+    uses: actions/checkout@v4
+    name:listing container 
+    run: docker ps -a
+
+    name: Check logs
+    run: docker logs website
+  
+deploy:
+  needs: build
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: curl
+      run: curl http://localhost:8080
