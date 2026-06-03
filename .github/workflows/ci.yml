@@ -16,7 +16,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        run: docker build -t my-nginx-demo
+        run: docker build -t my-nginx-demo .
       - run: docker run -d -p 8080:80 --name website my-nginx-demo
       - run: docker logs website
       - run: curl localhost:8080
