@@ -2,39 +2,52 @@ name: Nginx Docker CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image
+      - name: Build Image
         run: docker build -t my-nginx-demo .
 
-      - name: Run Container
-      - run: docker run -d -p 8080:80 --name website my-nginx-demo .
+  logs:
+    needs: build
+    runs-on: ubuntu-latest
 
-logs:
-  steps:
-    uses: actions/checkout@v4
-    name:listing container 
-    run: docker ps -a
+    steps:
+      - uses: actions/checkout@v4
 
-    name: Check logs
-    run: docker logs website
-  
-deploy:
-  needs: build
-  runs-on: ubuntu-latest
+      - name: Build Image Again
+        run: docker build -t my-nginx-demo .
 
-  steps:
-    - uses: actions/checkout@v4
-    - name: curl
-      run: curl http://localhost:8080
+      - name: Start Container
+        run: docker run -d -p 8080:80 --name website my-nginx-demo
+
+      - name: Show Containers
+        run: docker ps -a
+
+      - name: Show Logs
+        run: docker logs website
+
+  test:
+    needs: logs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Image Again
+        run: docker build -t my-nginx-demo .
+
+      - name: Start Container
+        run: |
+          docker run -d -p 8080:80 --name website my-nginx-demo
+          sleep 5
+
+      - name: Curl Test
+        run: curl http://localhost:8080
